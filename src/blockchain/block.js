@@ -1,5 +1,6 @@
 import adjustDifficulty from './modules/adjust-difficulty';
 import genHash from '../modules/hash';
+
 const DIFFICULTY = 3;
 class Block {
   constructor(timestamp, previousHash, hash, data, nonce, difficulty) {

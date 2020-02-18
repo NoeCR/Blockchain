@@ -1,11 +1,14 @@
 
 import Wallet, { INITIAL_BALANCE } from './wallet';
+import BlockChain from '../blockchain';
 
 describe('Wallet', () => {
   let wallet;
+  let blockchain;
 
   beforeEach(() => {
-    wallet = new Wallet();
+    blockchain = new BlockChain();
+    wallet = new Wallet(blockchain);
   });
 
   it('it is a healthy wallet', () => {
@@ -19,5 +22,35 @@ describe('Wallet', () => {
     const signature = wallet.sign('h3ll0');
     expect(typeof signature).toEqual('object');
     expect(signature).toEqual(wallet.sign('h3ll0'));
+  });
+
+  describe('creating a transaction', () => {
+    let tx;
+    let recipientAddress;
+    let amount;
+
+    beforeEach(() => {
+      recipientAddress = 'r4nd0m-4ddr3ss';
+      amount = 5;
+      tx = wallet.createTransaction(recipientAddress, amount);
+    });
+
+    describe('and doing the same transaction', () => {
+      beforeEach(() => {
+        tx = wallet.createTransaction(recipientAddress, amount);
+      });
+
+      it('double the amount subtracted from the wallet balance', () => {
+        const output = tx.outputs.find(({ address }) => address === wallet.publicKey);
+        expect(output.amount).toEqual(wallet.balance - (amount * 2));
+      });
+
+      it('clones the amount output for the recipient', () => {
+        const amounts = tx.outputs
+          .filter(({ address }) => address === recipientAddress)
+          .map((output) => output.amount);
+        expect(amounts).toEqual([amount, amount]);
+      });
+    });
   });
 });

@@ -2,7 +2,10 @@ import WebSocket from 'ws';
 
 const { P2P_PORT = 5000, PEERS } = process.env;
 const peers = PEERS ? PEERS.split(',') : [];
-const MESSAGE = { BLOCKS: 'blocks' };
+const MESSAGE = {
+  BLOCKS: 'blocks',
+  TX: 'transaction',
+};
 
 class P2PService {
   constructor(blockchain) {
@@ -23,20 +26,21 @@ class P2PService {
   }
 
   onConnection(socket) {
-    const { blockchain: { blocks } } = this;
+    const { blockchain } = this;
     console.log('[ws.socket]: connected.');
     this.sockets.push(socket);
     socket.on('message', (message) => {
       const { type, value } = JSON.parse(message);
 
       try {
-        if (MESSAGE.BLOCKS.includes(type)) this.blockchain.replace(value);
+        if (MESSAGE.BLOCKS === type) blockchain.replace(value);
+        else if (MESSAGE.TX === type) blockchain.addOrUpdate(value);
       } catch (error) {
-        console.log(`[ws:message]: error ${error}`);
+        throw Error(error);
       }
     });
 
-    socket.send(JSON.stringify({ type: MESSAGE.blocks, value: blocks }));
+    socket.send(JSON.stringify({ type: MESSAGE.blocks, value: blockchain.blocks }));
   }
 
   sync() {
@@ -53,4 +57,5 @@ class P2PService {
   }
 }
 
+export { MESSAGE };
 export default P2PService;
