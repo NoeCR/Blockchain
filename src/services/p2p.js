@@ -5,6 +5,7 @@ const peers = PEERS ? PEERS.split(',') : [];
 const MESSAGE = {
   BLOCKS: 'blocks',
   TX: 'transaction',
+  WIPE: 'wipe_memorypool',
 };
 
 class P2PService {
@@ -35,6 +36,7 @@ class P2PService {
       try {
         if (MESSAGE.BLOCKS === type) blockchain.replace(value);
         else if (MESSAGE.TX === type) blockchain.addOrUpdate(value);
+        else if (MESSAGE.WIPE === type) blockchain.wipe();
       } catch (error) {
         throw Error(error);
       }
